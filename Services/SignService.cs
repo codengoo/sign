@@ -13,7 +13,6 @@ namespace Signer.Services
 
         public List<object> ListCerts(string userPin)
         {
-            //string pkcs11LibPath = @"E:\te\fca_v1.dll";
             string pkcs11LibPath = Path.Combine(AppContext.BaseDirectory, "Native/fca_v1.dll");
             Console.WriteLine(pkcs11LibPath);
         
@@ -65,6 +64,10 @@ namespace Signer.Services
             }
 
             return list;
+        }
+
+        public Boolean SignHash(string Pin, string Thumprint, string hashToSignBase64) {
+            return true;
         }
     }
 }

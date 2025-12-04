@@ -21,5 +21,11 @@ namespace Signer.Controllers
         {
             return Ok(_signService.ListCerts(query.Pin));
         }
+
+        [HttpPost("sign")]
+        public IActionResult SignHash([FromBody] SignBody body)
+        {
+            return Ok(_signService.SignHash(body.Pin, body.Thumbprint, body.HashToSignBase64));
+        }
     }
 }
