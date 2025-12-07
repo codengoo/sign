@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Signer.Dto;
+using Signer.Models;
 using Signer.Services;
 using Signer.Services.Shared.FileUpload;
 
@@ -38,10 +39,11 @@ namespace Signer.Controllers
             var outputRoot = Path.Combine(env.ContentRootPath, "outputs");
             Directory.CreateDirectory(outputRoot);
 
-            var inputPdfpath = await fileUpload.SaveFileAsync(form.File, "doc");
+            var inputPdfPath = await fileUpload.SaveFileAsync(form.File, "doc");
+            var inputImagePath = await fileUpload.SaveFileAsync(form.Image, "image");
             var outputPdfPath = Path.Combine(outputRoot, Guid.NewGuid() + "_signed.pdf").Replace("\\", "/");
 
-            _signService.SignPdfFile(form.Pin, form.Thumbprint, inputPdfpath, outputPdfPath, "");
+            _signService.SignPdfFile(form.Pin, form.Thumbprint, inputPdfPath, outputPdfPath, inputImagePath, new Position(form.Page, form.PosX, form.PosY, form.Width, form.Height));
 
             return File(
                 new FileStream(outputPdfPath, FileMode.Open, FileAccess.Read),

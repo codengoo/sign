@@ -1,4 +1,8 @@
-﻿using iText.Kernel.Geom;
+﻿using iText.Forms.Form.Element;
+using iText.IO.Image;
+using iText.Kernel.Colors;
+using iText.Kernel.Geom;
+using iText.Layout.Borders;
 using iText.Signatures;
 using Signer.Domain;
 using Signer.Models;
@@ -28,21 +32,24 @@ namespace Signer.Services
             return new CertSigned(SignatureBase64: signature, CertificateBase64: cert.CertBase64);
         }
 
-        public String SignPdfFile(string userPin, string thumbprint, string inputPdfPath, string outputPdfPath, string placeImage)
+        public String SignPdfFile(string userPin, string thumbprint, string inputPdfPath, string outputPdfPath, string signatureImagePath, Position position)
         {
             using var pkcsKey = new PKCSKey(userPin);
-            var cert = pkcsKey.GetCertByThumprint(thumbprint) ?? throw new  Exception("Cert not found");
+            var cert = pkcsKey.GetCertByThumprint(thumbprint) ?? throw new Exception("Cert not found");
 
-            float posX = 200;
-            float posY = 150;
-            float width = 200;
-            float height = 50;
+            SignatureFieldAppearance appearance = new SignatureFieldAppearance("signature-field");
+            appearance.SetWidth(position.Width);
+            appearance.SetHeight(position.Height);
+            appearance.SetBorder(new SolidBorder(ColorConstants.DARK_GRAY, 2));
+            appearance.SetContent(ImageDataFactory.Create(signatureImagePath));
+
             SignerProperties signerProps = new SignerProperties()
-                .SetFieldName("Signature1")
-                .SetPageRect(new Rectangle(posX, posY, width, height))
-                .SetPageNumber(1)
+                .SetFieldName("signature-field")
+                .SetPageRect(new Rectangle(position.PosX, position.PosY, position.Width, position.Height))
+                .SetPageNumber(position.Page)
                 .SetReason("Tôi đồng ý với nội dung tài liệu")
-                .SetLocation("Việt Nam");
+                .SetLocation("Việt Nam")
+                .SetSignatureAppearance(appearance);
 
             pkcsKey.SignPdfFile(cert, inputPdfPath, outputPdfPath, signerProps);
             return outputPdfPath;
