@@ -1,8 +1,12 @@
-﻿using iText.Kernel.Crypto;
+﻿using iText.Bouncycastle.X509;
+using iText.Commons.Bouncycastle.Cert;
+using iText.Kernel.Crypto;
+using iText.Kernel.Pdf;
 using iText.Signatures;
 using Net.Pkcs11Interop.Common;
 using Net.Pkcs11Interop.HighLevelAPI;
 using Net.Pkcs11Interop.HighLevelAPI.Factories;
+using Org.BouncyCastle.Security;
 using Signer.Models;
 using System.Security.Cryptography.X509Certificates;
 using ISession = Net.Pkcs11Interop.HighLevelAPI.ISession;
@@ -64,7 +68,9 @@ namespace Signer.Domain
                     Thumbprint: x509.Thumbprint,
                     NotBefore: x509.NotBefore,
                     NotAfter: x509.NotAfter,
-                    CertBase64: Convert.ToBase64String(certBytes))
+                    CertBase64: Convert.ToBase64String(certBytes),
+                    Cert: x509
+                    )
                 );
             }
 
@@ -114,9 +120,22 @@ namespace Signer.Domain
             return Convert.ToBase64String(signature);
         }
 
-        public void SignFile(IObjectHandle privateKey)
+        public void SignPdfFile(CertInfo cert, String inputPdfPath, String outputPdfPath, SignerProperties signProperties)
         {
             if (_session == null) throw new Exception("No session init.");
+
+            IX509Certificate[] chain = [new X509CertificateBC(DotNetUtilities.FromX509Certificate(cert.Cert))];
+            IObjectHandle privateKey = this.GetPrivateKey(cert.KeyId);
+
+            Console.WriteLine(inputPdfPath);
+            Console.WriteLine(outputPdfPath);
+            var pdfReader = new PdfReader(inputPdfPath);
+            var pdfWriter = new PdfWriter(outputPdfPath);
+            var properties = new StampingProperties();
+
+            PdfSigner signer = new PdfSigner(pdfReader, pdfWriter, properties);
+            signer.SetSignerProperties(signProperties);
+
             IExternalSignature externalSignature = new Pkcs11Signature(
                 _session,
                 privateKey,
@@ -124,7 +143,7 @@ namespace Signer.Domain
                 _factories.MechanismFactory
             );
 
-            //signer.SignDetached(externalSignature, chain, null, null, null, 0, PdfSigner.CryptoStandard.CMS);
+            signer.SignDetached(externalSignature, chain, null, null, null, 0, PdfSigner.CryptoStandard.CMS);
         }
 
         public void Dispose()

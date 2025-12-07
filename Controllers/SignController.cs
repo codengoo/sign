@@ -1,15 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Org.BouncyCastle.Ocsp;
 using Signer.Dto;
 using Signer.Services;
-using Signer.Services.Shared;
-using System.Reflection.Metadata;
+using Signer.Services.Shared.FileUpload;
 
 namespace Signer.Controllers
 {
     [Route("api")]
     [ApiController]
-    public class SignController(ISignService signService, IFileUpload fileUpload) : ControllerBase
+    public class SignController(ISignService signService, IFileUpload fileUpload, IHostEnvironment env) : ControllerBase
     {
         private readonly ISignService _signService = signService;
 
@@ -34,11 +32,16 @@ namespace Signer.Controllers
             return Ok(data);
         }
 
-        [HttpPost("sign-file")]
+        [HttpPost("sign-pdf-file")]
         public async Task<IActionResult> SignFile([FromForm] SignFileForm form)
         {
-            var savedPath = await fileUpload.SaveFileAsync(form.File, "doc");
-            return Ok(_signService.SignFile(form.Pin, form.Thumbprint, savedPath, ""));
+            var outputRoot = Path.Combine(env.ContentRootPath, "outputs");
+            Directory.CreateDirectory(outputRoot);
+
+            var inputPdfpath = await fileUpload.SaveFileAsync(form.File, "doc");
+            var outputPdfPath = Path.Combine(outputRoot, Guid.NewGuid() + "_signed.pdf").Replace("\\", "/");
+
+            return Ok(_signService.SignPdfFile(form.Pin, form.Thumbprint, inputPdfpath, outputPdfPath, ""));
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Signer.Services.Shared
+﻿namespace Signer.Services.Shared.FileUpload
 {
     public interface IFileUpload
     {

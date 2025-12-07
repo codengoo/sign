@@ -1,6 +1,6 @@
 using Signer.Middlewares;
 using Signer.Services;
-using Signer.Services.Shared;
+using Signer.Services.Shared.FileUpload;
 
 var builder = WebApplication.CreateBuilder(args);
 

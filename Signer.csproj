@@ -10,6 +10,7 @@
 	<ItemGroup>
 		<PackageReference Include="BouncyCastle.Cryptography" Version="2.6.2" />
 		<PackageReference Include="itext" Version="9.4.0" />
+		<PackageReference Include="itext.bouncy-castle-adapter" Version="9.4.0" />
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
 		<PackageReference Include="Pkcs11Interop" Version="5.3.0" />
 	</ItemGroup>
@@ -18,10 +19,6 @@
 		<None Include="Native\fca_v1.dll">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Upload\" />
 	</ItemGroup>
 
 </Project>

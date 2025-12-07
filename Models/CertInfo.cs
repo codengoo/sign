@@ -1,4 +1,6 @@
-﻿namespace Signer.Models
+﻿using System.Security.Cryptography.X509Certificates;
+
+namespace Signer.Models
 {
     public record CertInfo(
         string Label,
@@ -7,6 +9,7 @@
         string Thumbprint,
         DateTime NotBefore,
         DateTime NotAfter,
-        string CertBase64
+        string CertBase64,
+        X509Certificate2 Cert
     );
 }
