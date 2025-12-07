@@ -1,6 +1,7 @@
-﻿using Net.Pkcs11Interop.Common;
-using Net.Pkcs11Interop.HighLevelAPI;
-using System.Security.Cryptography.X509Certificates;
+﻿using iText.Kernel.Pdf;
+using iText.Signatures;
+using Signer.Domain;
+using Signer.Models;
 
 namespace Signer.Services
 {
@@ -11,63 +12,37 @@ namespace Signer.Services
             return "Hello from Service!";
         }
 
-        public List<object> ListCerts(string userPin)
+        public List<CertInfo> ListCerts(string userPin)
         {
-            string pkcs11LibPath = Path.Combine(AppContext.BaseDirectory, "Native/fca_v1.dll");
-            Console.WriteLine(pkcs11LibPath);
-        
-            var factories = new Pkcs11InteropFactories();
-            using var library = factories.Pkcs11LibraryFactory.LoadPkcs11Library(
-                factories,
-                pkcs11LibPath,
-                AppType.MultiThreaded
-            );
-
-            var slots = library.GetSlotList(SlotsType.WithTokenPresent);
-            if (slots.Count == 0)
-            {
-                //return "Không tìm thấy slot";
-                return [];
-            }
-
-            var slot = slots[0];
-            using var session = slot.OpenSession(SessionType.ReadOnly);
-            session.Login(CKU.CKU_USER, userPin);
-
-            List<IObjectHandle> certs = session.FindAllObjects(new List<IObjectAttribute>()
-            {
-                factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_CERTIFICATE)
-            });
-
-            if (certs.Count == 0)
-            {
-                //return "Không tìm thấy cert";
-                return [];
-            }
-
-            var list = new List<object>();
-            foreach (var cert in certs)
-            {
-                var certAttrs = session.GetAttributeValue(cert, [CKA.CKA_LABEL, CKA.CKA_VALUE, CKA.CKA_ID, ]);
-                var certBytes = certAttrs[1].GetValueAsByteArray();
-                var x509 = X509CertificateLoader.LoadCertificate(certBytes);
-
-                list.Add(new
-                {
-                    Label = certAttrs[0].GetValueAsString(),
-                    Subject = x509.Subject,
-                    Thumbprint = x509.Thumbprint,
-                    NotBefore = x509.NotBefore,
-                    NotAfter = x509.NotAfter,
-                    CertBase64 = Convert.ToBase64String(certBytes)
-                });
-            }
-
-            return list;
+            var pkcsKey = new PKCSKey(userPin);
+            return pkcsKey.LoadCert();
         }
 
-        public Boolean SignHash(string Pin, string Thumprint, string hashToSignBase64) {
+        public Boolean SignHash(string userPin, string thumbprint, string hashToSignBase64) {
+            var pkcsKey = new PKCSKey(userPin);
+            var cert = pkcsKey.GetCertByThumprint(thumbprint);
+            if (cert == null) return false;
+            var privateKey = pkcsKey.GetPrivateKey(cert.KeyId);
+            if (privateKey == null) return false;
+            pkcsKey.SignHash(hashToSignBase64, privateKey);
             return true;
+        }
+
+        public String SignFile(string userPin, string thumbprint,string inputFile, string placeImage)
+        {
+            var pkcsKey = new PKCSKey(userPin);
+            var cert = pkcsKey.GetCertByThumprint(thumbprint);
+            if (cert == null) return "";
+
+            string inputPdf = @"E:\te\test.pdf";
+            string outputPdf = @"E:\te\test_signed.pdf";
+
+            var pdfReader = new PdfReader(inputPdf);
+            var pdfWriter = new PdfWriter(outputPdf);
+            var properties = new StampingProperties();
+            PdfSigner signer = new PdfSigner(pdfReader, pdfWriter, properties);
+
+            return "";
         }
     }
 }

@@ -1,9 +1,12 @@
-﻿namespace Signer.Services
+﻿using Signer.Models;
+
+namespace Signer.Services
 {
     public interface ISignService
     {
         string Test();
-        List<object> ListCerts(string pin);
-        Boolean SignHash(string Pin, string Thumprint, string hashToSignBase64);
+        List<CertInfo> ListCerts(string userPin);
+        Boolean SignHash(string userPin, string thumbprint, string hashToSignBase64);
+        String SignFile(string PinuserPin, string thumbprint, string inputFile, string placeImage);
     }
 }
