@@ -1,12 +1,11 @@
 ﻿using Net.Pkcs11Interop.Common;
 using Net.Pkcs11Interop.HighLevelAPI;
-using Org.BouncyCastle.Ocsp;
 using Signer.Models;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Signer.Domain
 {
-    public class PKCSKey
+    public class PKCSKey: IDisposable
     {
         private readonly String PKCSLibPath = Path.Combine(AppContext.BaseDirectory, "Native/fca_v1.dll");
         private readonly Pkcs11InteropFactories _factories;
@@ -96,11 +95,11 @@ namespace Signer.Domain
             return privateKeys[0];
         }
 
-        public String SignHash(String hash, IObjectHandle privateKey)
+        public String SignHash(String hashBase64, IObjectHandle privateKey)
         {
             if (_session == null) throw new Exception("No session init.");
             var mechanism = _factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS);
-            byte[] hashToSign = Convert.FromBase64String(hash);
+            byte[] hashToSign = Convert.FromBase64String(hashBase64);
 
             byte[] signature = _session.Sign(
                 mechanism,

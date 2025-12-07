@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Signer.Services;
-using Signer.Models;
+using System.Reflection.Metadata;
+using Signer.Dto;
 
 namespace Signer.Controllers
 {
@@ -13,25 +14,29 @@ namespace Signer.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            return Ok(_signService.Test());
+            throw new NotImplementedException();
+            //return Ok(_signService.Test());
         }
 
         [HttpGet("certs")]
         public IActionResult ListCert([FromQuery] CertQuery query)
         {
-            return Ok(_signService.ListCerts(query.Pin));
+            var data = _signService.ListCerts(query.Pin);
+            return Ok(data);
         }
 
         [HttpPost("sign")]
         public IActionResult SignHash([FromBody] SignBody body)
         {
-            return Ok(_signService.SignHash(body.Pin, body.Thumbprint, body.HashToSignBase64));
+            var data = _signService.SignHash(body.Pin, body.Thumbprint, body.HashToSignBase64);
+            return Ok(data);
         }
 
         [HttpPost("sign-file")]
-        public IActionResult SignFile([FromBody] SignBody body)
+        public IActionResult SignFile([FromForm] SignFileForm form)
         {
-            return Ok(_signService.SignHash(body.Pin, body.Thumbprint, body.HashToSignBase64));
+            //return Ok(_signService.SignHash(form.Pin, form.Thumbprint));
+            return Ok(form);
         }
     }
 }

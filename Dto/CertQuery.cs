@@ -1,4 +1,4 @@
-﻿namespace Signer.Models
+﻿namespace Signer.Dto
 {
     public class CertQuery
     {

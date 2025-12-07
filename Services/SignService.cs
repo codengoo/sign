@@ -14,23 +14,23 @@ namespace Signer.Services
 
         public List<CertInfo> ListCerts(string userPin)
         {
-            var pkcsKey = new PKCSKey(userPin);
+            using var pkcsKey = new PKCSKey(userPin);
             return pkcsKey.LoadCert();
         }
 
-        public Boolean SignHash(string userPin, string thumbprint, string hashToSignBase64) {
-            var pkcsKey = new PKCSKey(userPin);
-            var cert = pkcsKey.GetCertByThumprint(thumbprint);
-            if (cert == null) return false;
-            var privateKey = pkcsKey.GetPrivateKey(cert.KeyId);
-            if (privateKey == null) return false;
-            pkcsKey.SignHash(hashToSignBase64, privateKey);
-            return true;
+        public CertSigned SignHash(string userPin, string thumbprint, string hashToSignBase64)
+        {
+            using var pkcsKey = new PKCSKey(userPin);
+            var cert = pkcsKey.GetCertByThumprint(thumbprint) ?? throw new Exception("Cert not found");
+            var privateKey = pkcsKey.GetPrivateKey(cert.KeyId) ?? throw new Exception("Private key not found");
+
+            var signature = pkcsKey.SignHash(hashToSignBase64, privateKey);
+            return new CertSigned(SignatureBase64: signature, CertificateBase64: cert.CertBase64);
         }
 
-        public String SignFile(string userPin, string thumbprint,string inputFile, string placeImage)
+        public String SignFile(string userPin, string thumbprint, string inputFile, string placeImage)
         {
-            var pkcsKey = new PKCSKey(userPin);
+            using var pkcsKey = new PKCSKey(userPin);
             var cert = pkcsKey.GetCertByThumprint(thumbprint);
             if (cert == null) return "";
 

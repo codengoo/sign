@@ -6,7 +6,7 @@ namespace Signer.Services
     {
         string Test();
         List<CertInfo> ListCerts(string userPin);
-        Boolean SignHash(string userPin, string thumbprint, string hashToSignBase64);
+        CertSigned SignHash(string userPin, string thumbprint, string hashToSignBase64);
         String SignFile(string PinuserPin, string thumbprint, string inputFile, string placeImage);
     }
 }
