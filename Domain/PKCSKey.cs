@@ -127,8 +127,6 @@ namespace Signer.Domain
             IX509Certificate[] chain = [new X509CertificateBC(DotNetUtilities.FromX509Certificate(cert.Cert))];
             IObjectHandle privateKey = this.GetPrivateKey(cert.KeyId);
 
-            Console.WriteLine(inputPdfPath);
-            Console.WriteLine(outputPdfPath);
             var pdfReader = new PdfReader(inputPdfPath);
             var pdfWriter = new PdfWriter(outputPdfPath);
             var properties = new StampingProperties();
@@ -183,7 +181,7 @@ namespace Signer.Domain
         {
             // Dùng cơ chế SHA256+RSA PKCS#1 (token sẽ hash message rồi padding)
             //var mechanism = _mechanismFactory.Create(CKM.CKM_SHA256_RSA_PKCS);
-            var mechanism = mechanismFactory.Create(CKM.CKM_RSA_PKCS);
+            var mechanism = mechanismFactory.Create(CKM.CKM_SHA256_RSA_PKCS);
             var signature = session.Sign(mechanism, privateKey, message);
             return signature;
         }

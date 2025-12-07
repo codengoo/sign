@@ -41,7 +41,14 @@ namespace Signer.Controllers
             var inputPdfpath = await fileUpload.SaveFileAsync(form.File, "doc");
             var outputPdfPath = Path.Combine(outputRoot, Guid.NewGuid() + "_signed.pdf").Replace("\\", "/");
 
-            return Ok(_signService.SignPdfFile(form.Pin, form.Thumbprint, inputPdfpath, outputPdfPath, ""));
+            _signService.SignPdfFile(form.Pin, form.Thumbprint, inputPdfpath, outputPdfPath, "");
+
+            return File(
+                new FileStream(outputPdfPath, FileMode.Open, FileAccess.Read),
+                "application/pdf",
+                Path.GetFileName(outputPdfPath),
+                enableRangeProcessing: true
+            );
         }
     }
 }
