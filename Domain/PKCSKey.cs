@@ -1,11 +1,15 @@
-﻿using Net.Pkcs11Interop.Common;
+﻿using iText.Kernel.Crypto;
+using iText.Signatures;
+using Net.Pkcs11Interop.Common;
 using Net.Pkcs11Interop.HighLevelAPI;
+using Net.Pkcs11Interop.HighLevelAPI.Factories;
 using Signer.Models;
 using System.Security.Cryptography.X509Certificates;
+using ISession = Net.Pkcs11Interop.HighLevelAPI.ISession;
 
 namespace Signer.Domain
 {
-    public class PKCSKey: IDisposable
+    public class PKCSKey : IDisposable
     {
         private readonly String PKCSLibPath = Path.Combine(AppContext.BaseDirectory, "Native/fca_v1.dll");
         private readonly Pkcs11InteropFactories _factories;
@@ -110,6 +114,19 @@ namespace Signer.Domain
             return Convert.ToBase64String(signature);
         }
 
+        public void SignFile(IObjectHandle privateKey)
+        {
+            if (_session == null) throw new Exception("No session init.");
+            IExternalSignature externalSignature = new Pkcs11Signature(
+                _session,
+                privateKey,
+                DigestAlgorithms.SHA256,
+                _factories.MechanismFactory
+            );
+
+            //signer.SignDetached(externalSignature, chain, null, null, null, 0, PdfSigner.CryptoStandard.CMS);
+        }
+
         public void Dispose()
         {
             try
@@ -123,6 +140,33 @@ namespace Signer.Domain
 
             _library?.Dispose();
             _library = null;
+        }
+    }
+
+    public class Pkcs11Signature(ISession session, IObjectHandle privateKey, string digestAlgorithm, IMechanismFactory mechanismFactory) : IExternalSignature
+    {
+        public string GetDigestAlgorithmName()
+        {
+            return digestAlgorithm;
+        }
+
+        public string GetSignatureAlgorithmName()
+        {
+            return "RSA";
+        }
+
+        public ISignatureMechanismParams? GetSignatureMechanismParameters()
+        {
+            return null;
+        }
+
+        public byte[] Sign(byte[] message)
+        {
+            // Dùng cơ chế SHA256+RSA PKCS#1 (token sẽ hash message rồi padding)
+            //var mechanism = _mechanismFactory.Create(CKM.CKM_SHA256_RSA_PKCS);
+            var mechanism = mechanismFactory.Create(CKM.CKM_RSA_PKCS);
+            var signature = session.Sign(mechanism, privateKey, message);
+            return signature;
         }
     }
 }

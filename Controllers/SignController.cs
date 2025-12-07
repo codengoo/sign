@@ -1,13 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Signer.Services;
-using System.Reflection.Metadata;
+using Org.BouncyCastle.Ocsp;
 using Signer.Dto;
+using Signer.Services;
+using Signer.Services.Shared;
+using System.Reflection.Metadata;
 
 namespace Signer.Controllers
 {
     [Route("api")]
     [ApiController]
-    public class SignController(ISignService signService) : ControllerBase
+    public class SignController(ISignService signService, IFileUpload fileUpload) : ControllerBase
     {
         private readonly ISignService _signService = signService;
 
@@ -33,10 +35,10 @@ namespace Signer.Controllers
         }
 
         [HttpPost("sign-file")]
-        public IActionResult SignFile([FromForm] SignFileForm form)
+        public async Task<IActionResult> SignFile([FromForm] SignFileForm form)
         {
-            //return Ok(_signService.SignHash(form.Pin, form.Thumbprint));
-            return Ok(form);
+            var savedPath = await fileUpload.SaveFileAsync(form.File, "doc");
+            return Ok(_signService.SignFile(form.Pin, form.Thumbprint, savedPath, ""));
         }
     }
 }
