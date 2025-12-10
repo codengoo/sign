@@ -1,6 +1,5 @@
 ﻿using iText.Bouncycastle.X509;
 using iText.Commons.Bouncycastle.Cert;
-using iText.IO.Image;
 using iText.Kernel.Crypto;
 using iText.Kernel.Pdf;
 using iText.Signatures;
