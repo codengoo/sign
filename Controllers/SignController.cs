@@ -19,6 +19,13 @@ namespace Signer.Controllers
             //return Ok(_signService.Test());
         }
 
+        [HttpGet("provider")]
+        public IActionResult GetProvider()
+        {
+            var data = _signService.ScanProvider();
+            return Ok(data);
+        }
+
         [HttpGet("certs")]
         public IActionResult ListCert([FromQuery] CertQuery query)
         {

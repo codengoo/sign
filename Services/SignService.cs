@@ -16,6 +16,13 @@ namespace Signer.Services
             return "Hello from Service!";
         }
 
+        public List<ProviderInfo> ScanProvider()
+        {
+            var detector = new PKCSScaner();
+            var result = detector.Scan();
+            return result;
+        }
+
         public List<CertInfo> ListCerts(string userPin)
         {
             using var pkcsKey = new PKCSKey(userPin);
